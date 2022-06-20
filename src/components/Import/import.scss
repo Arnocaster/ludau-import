@@ -1,0 +1,12 @@
+.zone {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border: 2px dashed grey;
+    border-radius: 20px;
+    min-height: 200px;
+    max-width: 400px;
+    height: 100%;
+    margin: 40px auto 80px auto;
+  }

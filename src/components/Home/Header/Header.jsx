@@ -7,6 +7,7 @@ import {
 import MenuIcon from '@mui/icons-material/Menu';
 import HomeIcon from '@mui/icons-material/Home';
 import { Link } from 'react-router-dom';
+import ImportStatus from '../../ImportStatus/ImportStatus';
 
 function Header() {
     const pages = {
@@ -71,6 +72,7 @@ function Header() {
                             </Link>
                         ))}
                     </Box>
+                    <ImportStatus />
                 </Toolbar>
             </Container>
         </AppBar>
