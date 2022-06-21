@@ -8,6 +8,22 @@ const initialState = {
         columns: null,
         data: null,
     },
+    game: {
+        status: false,
+        columns: null,
+        data: null,
+    },
+    booking: {
+        status: false,
+        columns: null,
+        data: null,
+    },
+    cost: {
+        status: false,
+        columns: null,
+        data: null,
+    },
+
 };
 
 export function importReducer(state = initialState, action) {

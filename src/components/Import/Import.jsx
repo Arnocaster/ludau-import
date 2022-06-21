@@ -1,28 +1,25 @@
-/* eslint-disable no-param-reassign */
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { useState } from 'react';
 import './import.scss';
 import Dropzone from 'react-dropzone';
-import { useSelector, useDispatch } from 'react-redux';
-import { Container, Button } from '@mui/material';
+import { useDispatch } from 'react-redux';
+import { Container } from '@mui/material';
 import Papa from 'papaparse';
 import { importUpdateFile } from '../../store/actions';
 import ImportStatus from '../ImportStatus/ImportStatus';
 import ImportFile from './ImportFile/ImportFile';
-// import Papaparse from '../Papaparse/Papaparse';
 
 function Import() {
     const dispatch = useDispatch();
-    const dataStore = useSelector((state) => state.importReducer);
-    const handleClick = () => {
-        const newData = {
-            user: {
-                status: 'true',
-                columns: ['c1', 'c2'],
-                data: ['r1', 'r2'],
+    const updateStore = (name, parsedCsv) => {
+        const updated = {
+            [name]: {
+                status: true,
+                columns: parsedCsv.meta.fields,
+                data: parsedCsv.data,
             },
         };
-        dispatch(importUpdateFile({ ...dataStore, ...newData }));
+        dispatch(importUpdateFile(updated));
     };
     const [files, setFiles] = useState([]);
 
@@ -33,8 +30,6 @@ function Import() {
         booking: ['CodeInscrit', 'Nom', 'DateSortie', 'NomJeu', 'CodeJeu', 'TypeJeu'],
         cost: ['CodeJeu', 'NomJeu', 'DateAchat', 'PrixAchat', 'PrixEstime', 'NomFournisseur'],
     };
-
-    // Read and parse CSV
     const readCSV = async (file) => new Promise((resolve) => {
         Papa.parse(file, {
             header: true,
@@ -44,64 +39,76 @@ function Import() {
             },
         });
     });
-    const updateEltStatus = (name) => {
-        console.log(files.find((file) => file.data.name === name), files);
-    };
-    const processCSV = async (elts) => {
-        await elts.forEach(async (file) => {
-            const parsed = await readCSV(file);
-            const csvFields = parsed.meta.fields;
+
+    const processFile = async (file) => {
+        const processedFile = file;
+        if (file.type === 'text/csv') {
+            const result = await readCSV(file);
+            const csvFields = result.meta.fields;
             const fileCategory = Object.keys(fieldsSchema).find((key) => (
                 fieldsSchema[key].every((field) => csvFields.includes(field))));
-            console.log('fileCategory', fileCategory);
-            updateEltStatus(file.name);
-        });
+            if (fileCategory) {
+                updateStore(fileCategory, result);
+                processedFile.status = 'valid';
+            } else {
+                processedFile.status = 'invalid';
+            }
+        } else {
+            processedFile.status = 'invalid';
+        }
+        return processedFile;
     };
 
-    const handleDropFiles = (uploaded) => {
-        // set les files avec un status pending
-        // Penser à vérifier le type
-
-        const wrapStatus = uploaded.map((data) => {
-            const eltWithStatus = {
-                status: 'pending',
-                data,
-            };
-            return eltWithStatus;
-        });
-        console.log(wrapStatus);
-        setFiles(wrapStatus);
-        console.log('after', files);
-        processCSV(uploaded);
+    const handleDropFiles = async (uploaded) => {
+        //  Original upload for fast display
+        setFiles(uploaded.map((file, index) => {
+            const filePending = file;
+            filePending.status = 'pending';
+            filePending.delay = index;
+            return filePending;
+        }));
+        //  File with type detection and csv Parsing
+        const processedFiles = await Promise.all(uploaded.map((file) => processFile(file)));
+        setFiles(processedFiles);
+        //  Hide softly files
+        setTimeout(() => {
+            setFiles(processedFiles.map((file, index) => {
+                const filePending = file;
+                filePending.status = false;
+                filePending.delay = index;
+                return filePending;
+            }));
+        }, uploaded.length * 150);
+        //  Delete files from state
+        setTimeout(() => {
+            setFiles([]);
+        }, uploaded.length * 175);
     };
 
     return (
         <Container>
             <Dropzone onDrop={handleDropFiles}>
                 {({ getRootProps, getInputProps }) => (
-                    <section>
+                    <section className={(!files.length) ? 'zone' : 'zone zone--padding'} {...(!files.length) && getRootProps()}>
                         {(!files.length)
                             ? (
-                                <div className="zone" {...getRootProps()}>
+                                <>
                                     <input {...getInputProps()} />
                                     <p>Déposez des fichiers ou cliquez ici.</p>
-                                </div>
+                                </>
                             )
                             : (
-                                <div className="zone">
-                                    {' '}
-                                    {files.map((file) => (
-                                        <ImportFile
-                                            key={file.data.name}
-                                            file={file}
-                                        />
-                                    ))}
-                                </div>
+                                files.map((file) => (
+                                    <ImportFile
+                                        key={file.name}
+                                        file={file}
+                                        schemas={fieldsSchema}
+                                    />
+                                ))
                             )}
                     </section>
                 )}
             </Dropzone>
-            <Button onClick={handleClick}>TESTO</Button>
             <ImportStatus />
             {/* <Papaparse /> */}
         </Container>
