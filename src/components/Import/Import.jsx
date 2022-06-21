@@ -86,7 +86,7 @@ function Import() {
         // Delete files from state
         setTimeout(() => {
             setFiles([]);
-        }, uploaded.length * 150);
+        }, (uploaded.length * 150 > 1000) ? uploaded.length * 150 : 1000);
     };
 
     useEffect(() => {
