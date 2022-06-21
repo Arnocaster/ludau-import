@@ -1,16 +1,20 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './import.scss';
 import Dropzone from 'react-dropzone';
-import { useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Container } from '@mui/material';
 import Papa from 'papaparse';
 import { importUpdateFile } from '../../store/actions';
 import ImportStatus from '../ImportStatus/ImportStatus';
 import ImportFile from './ImportFile/ImportFile';
+import DynamicContainer from '../DynamicContainer/DynamicContainer';
 
 function Import() {
     const dispatch = useDispatch();
+    const statusStore = useSelector((state) => state.importReducer);
+    const importOk = Object.keys(statusStore).every((key) => statusStore[key].status);
+    const [displayDrop, setDisplayDrop] = useState(true);
     const updateStore = (name, parsedCsv) => {
         const updated = {
             [name]: {
@@ -71,45 +75,58 @@ function Import() {
         const processedFiles = await Promise.all(uploaded.map((file) => processFile(file)));
         setFiles(processedFiles);
         //  Hide softly files
-        setTimeout(() => {
-            setFiles(processedFiles.map((file, index) => {
-                const filePending = file;
-                filePending.status = false;
-                filePending.delay = index;
-                return filePending;
-            }));
-        }, uploaded.length * 150);
-        //  Delete files from state
+        // setTimeout(() => {
+        //     setFiles(processedFiles.map((file, index) => {
+        //         const filePending = file;
+        //         filePending.status = false;
+        //         filePending.delay = index;
+        //         return filePending;
+        //     }));
+        // }, uploaded.length * 50 + 150);
+        // Delete files from state
         setTimeout(() => {
             setFiles([]);
-        }, uploaded.length * 175);
+        }, uploaded.length * 150);
     };
+
+    useEffect(() => {
+        if (importOk !== displayDrop) {
+            setTimeout(() => { setDisplayDrop(importOk); }, 750);
+        }
+    }, [importOk]);
 
     return (
         <Container>
-            <Dropzone onDrop={handleDropFiles}>
-                {({ getRootProps, getInputProps }) => (
-                    <section className={(!files.length) ? 'zone' : 'zone zone--padding'} {...(!files.length) && getRootProps()}>
-                        {(!files.length)
-                            ? (
-                                <>
-                                    <input {...getInputProps()} />
-                                    <p>Déposez des fichiers ou cliquez ici.</p>
-                                </>
-                            )
-                            : (
-                                files.map((file) => (
-                                    <ImportFile
-                                        key={file.name}
-                                        file={file}
-                                        schemas={fieldsSchema}
-                                    />
-                                ))
-                            )}
-                    </section>
-                )}
-            </Dropzone>
-            <ImportStatus />
+            <DynamicContainer test={importOk}>
+                {(!displayDrop)
+                && (
+                    <Dropzone onDrop={handleDropFiles}>
+                        {({ getRootProps, getInputProps }) => (
+                            <section className={(!files.length) ? 'zone' : 'zone zone--padding'} {...(!files.length) && getRootProps()}>
+                                {(!files.length)
+                                    ? (
+                                        <>
+                                            <input {...getInputProps()} />
+                                            <p>Déposez des fichiers ou cliquez ici.</p>
+                                        </>
+                                    )
+                                    : (
+                                        files.map((file) => (
+                                            <ImportFile
+                                                key={file.name}
+                                                file={file}
+                                                schemas={fieldsSchema}
+                                            />
+                                        ))
+                                    )}
+                            </section>
+                        )}
+                    </Dropzone>
+                ) }
+            </DynamicContainer>
+            <Container>
+                <ImportStatus />
+            </Container>
             {/* <Papaparse /> */}
         </Container>
 

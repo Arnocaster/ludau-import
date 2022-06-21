@@ -31,7 +31,7 @@ function ImportFile({ file }) {
         <Grow
             in={!(!file.status)}
             style={{ transformOrigin: '0 0 0' }}
-            {...(file.status ? { timeout: file.delay * 300 } : {})}
+            {...(file.status ? { timeout: file.delay * 150 } : {})}
         >
             <Paper elevation={3} className="file">
                 <Typography>{(file.name) ? file.name.slice(0, 10) : 'name'}</Typography>
@@ -42,8 +42,7 @@ function ImportFile({ file }) {
                     ko
                 </Typography>
                 <Chip
-                    className="file__status"
-                    sx={{ visibility: (file.status) ? 'visible' : 'hidden' }}
+                    className={(file.status) ? 'file__status' : 'file__status--hidden'}
                     label={file.status || ''}
                     color={(chipFeedback[file.status]) ? chipFeedback[file.status].color : 'default'}
                     icon={(chipFeedback[file.status])

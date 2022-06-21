@@ -11,6 +11,15 @@
     min-width: 400px;
     height: 100%;
     margin: 40px auto 80px auto;
+    &__container {
+        transition: height 2500ms;
+        height : auto;
+        margin-bottom: 20px;
+    }
+    &__container--hidden{
+        height: 0;
+        visibility: hidden;
+    }
     &--padding {
         padding: 10px;
     }

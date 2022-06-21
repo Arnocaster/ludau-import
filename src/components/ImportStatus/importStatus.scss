@@ -1,3 +1,9 @@
-.status__chip{
-    margin: 0 5px;
+.import-status{
+    &__stack {
+        margin : 0 auto;
+    }
+    &__chip{
+        margin: 0 5px;
+        font-size: 0.75rem!important;
+    }
 }

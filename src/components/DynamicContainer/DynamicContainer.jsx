@@ -20,6 +20,7 @@ function DynamicContainer({
                 height: `${contSize.height}px`,
                 width: `${contSize.width}px`,
                 overflow: 'hidden',
+                margin: '0 auto',
                 ...style,
             }}
         >
