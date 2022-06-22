@@ -6,9 +6,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Container } from '@mui/material';
 import Papa from 'papaparse';
 import { importUpdateFile } from '../../store/actions';
-import ImportStatus from '../ImportStatus/ImportStatus';
+import ImportStatus from './ImportStatus/ImportStatus';
 import ImportFile from './ImportFile/ImportFile';
-import DynamicContainer from '../DynamicContainer/DynamicContainer';
 
 function Import() {
     const dispatch = useDispatch();
@@ -34,6 +33,7 @@ function Import() {
         booking: ['CodeInscrit', 'Nom', 'DateSortie', 'NomJeu', 'CodeJeu', 'TypeJeu'],
         cost: ['CodeJeu', 'NomJeu', 'DateAchat', 'PrixAchat', 'PrixEstime', 'NomFournisseur'],
     };
+
     const readCSV = async (file) => new Promise((resolve) => {
         Papa.parse(file, {
             header: true,
@@ -44,6 +44,12 @@ function Import() {
         });
     });
 
+    const resultIndexed = (oldResult) => {
+        const oldData = oldResult.data;
+        const newData = oldData.map((row, index) => ({ id: index, ...row }));
+        return { ...oldResult, data: newData };
+    };
+
     const processFile = async (file) => {
         const processedFile = file;
         if (file.type === 'text/csv') {
@@ -52,7 +58,7 @@ function Import() {
             const fileCategory = Object.keys(fieldsSchema).find((key) => (
                 fieldsSchema[key].every((field) => csvFields.includes(field))));
             if (fileCategory) {
-                updateStore(fileCategory, result);
+                updateStore(fileCategory, resultIndexed(result));
                 processedFile.status = 'valid';
             } else {
                 processedFile.status = 'invalid';
@@ -71,19 +77,10 @@ function Import() {
             filePending.delay = index;
             return filePending;
         }));
+
         //  File with type detection and csv Parsing
         const processedFiles = await Promise.all(uploaded.map((file) => processFile(file)));
         setFiles(processedFiles);
-        //  Hide softly files
-        // setTimeout(() => {
-        //     setFiles(processedFiles.map((file, index) => {
-        //         const filePending = file;
-        //         filePending.status = false;
-        //         filePending.delay = index;
-        //         return filePending;
-        //     }));
-        // }, uploaded.length * 50 + 150);
-        // Delete files from state
         setTimeout(() => {
             setFiles([]);
         }, (uploaded.length * 150 > 1000) ? uploaded.length * 150 : 1000);
@@ -96,13 +93,12 @@ function Import() {
     }, [importOk]);
 
     return (
-        <Container>
-            <DynamicContainer test={importOk}>
-                {(!displayDrop)
+        <Container className="import__container">
+            {(!displayDrop)
                 && (
                     <Dropzone onDrop={handleDropFiles}>
                         {({ getRootProps, getInputProps }) => (
-                            <section className={(!files.length) ? 'zone' : 'zone zone--padding'} {...(!files.length) && getRootProps()}>
+                            <section className={(!files.length) ? 'import__zone' : 'import__zone import__zone--padding'} {...(!files.length) && getRootProps()}>
                                 {(!files.length)
                                     ? (
                                         <>
@@ -123,7 +119,7 @@ function Import() {
                         )}
                     </Dropzone>
                 ) }
-            </DynamicContainer>
+
             <Container>
                 <ImportStatus />
             </Container>

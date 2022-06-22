@@ -1,4 +1,8 @@
-.zone {
+.import{
+    &__container{
+        padding: 40px;
+    }
+    &__zone {
     align-items: center;
     display: flex;
     flex-wrap: wrap;
@@ -10,17 +14,18 @@
     min-height: 200px;
     min-width: 400px;
     height: 100%;
-    margin: 40px auto 80px auto;
-    &__container {
-        transition: height 2500ms;
-        height : auto;
-        margin-bottom: 20px;
-    }
-    &__container--hidden{
-        height: 0;
-        visibility: hidden;
-    }
-    &--padding {
-        padding: 10px;
-    }
+    margin: 0px auto 40px auto;
+        &__container {
+            transition: height 2500ms;
+            height : auto;
+            margin-bottom: 20px;
+        }
+        &__container--hidden{
+            height: 0;
+            visibility: hidden;
+        }
+        &--padding {
+            padding: 10px;
+        }
   }
+}

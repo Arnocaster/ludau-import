@@ -1,5 +1,8 @@
+/* eslint-disable prefer-rest-params */
+/* eslint-disable no-unused-vars */
 /* eslint-disable react/jsx-props-no-multi-spaces */
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import './header.scss';
 import {
     AppBar, Toolbar, Container, Menu, MenuItem, Typography, IconButton, Box, Button,
@@ -7,11 +10,32 @@ import {
 import MenuIcon from '@mui/icons-material/Menu';
 import HomeIcon from '@mui/icons-material/Home';
 import { Link } from 'react-router-dom';
-import ImportStatus from '../../ImportStatus/ImportStatus';
+import { useDispatch, useSelector } from 'react-redux';
+import ImportStatus from '../../Import/ImportStatus/ImportStatus';
+import { addAroundSize } from '../../../store/actions';
+
+function debounce(fn, ms) {
+    let timer;
+    return () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            timer = null;
+            fn.apply(this, arguments);
+        }, ms);
+    };
+}
 
 function Header() {
+    const dispatch = useDispatch();
+    const updateStore = (size) => {
+        dispatch(addAroundSize(size));
+    };
+    const headerRef = useRef(null);
+    const [headerSize, setHeaderSize] = useState({ width: 0, height: 0 });
+
     const pages = {
         Home: { url: '/', display: <HomeIcon /> },
+        References: { url: '/references', display: 'Références' },
         Import: { url: '/import', display: 'Import' },
     };
 
@@ -26,8 +50,23 @@ function Header() {
         setAnchorElNav(null);
     };
 
+    // Get header Height
+    const debouncedHandleResize = debounce(() => {
+        const { height, width } = headerRef.current.getBoundingClientRect();
+        setHeaderSize({ height, width });
+        updateStore({ height, width });
+    }, 16);
+
+    useEffect(() => {
+        debouncedHandleResize();
+        window.addEventListener('resize', debouncedHandleResize);
+        return (_) => {
+            window.removeEventListener('resize', debouncedHandleResize);
+        };
+    }, []);
+
     return (
-        <AppBar id="appbar" position="sticky">
+        <AppBar id="appbar" position="sticky" ref={headerRef}>
             <Container>
                 <Toolbar disableGutters>
                     {/* Mobile Button */}

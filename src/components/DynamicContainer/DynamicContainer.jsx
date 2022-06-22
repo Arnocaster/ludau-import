@@ -40,9 +40,16 @@ function DynamicContainer({
 }
 
 DynamicContainer.propTypes = {
-    children: PropTypes.arrayOf(PropTypes.element).isRequired,
-    style: PropTypes.shape({ minHeight: PropTypes.string, minWidth: PropTypes.string }),
-    className: PropTypes.string,
+    children: PropTypes.oneOfType([
+        PropTypes.arrayOf(PropTypes.element),
+        PropTypes.func,
+        PropTypes.bool]).isRequired,
+    style: PropTypes.oneOfType([
+        PropTypes.shape({ minHeight: PropTypes.string, minWidth: PropTypes.string }),
+        PropTypes.func]),
+    className: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.func]),
 };
 
 DynamicContainer.defaultProps = {
